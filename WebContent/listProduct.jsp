@@ -4,7 +4,6 @@
 <%@ page import="com.supinfo.sun.supcommerce.bo.SupProduct"%>   
 <%@ page import="com.supinfo.sun.supcommerce.doa.SupProductDao"%>
 <%@ page import="java.util.List"%>
-<%@ page import="java.text.DecimalFormat"%>
 
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/fmt" prefix="fmt" %> 
