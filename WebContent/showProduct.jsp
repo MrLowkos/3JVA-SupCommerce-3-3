@@ -1,22 +1,27 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
     
+<%@ page import="com.supinfo.sun.supcommerce.bo.SupProduct"%>
 <%@ page import="com.supinfo.sun.supcommerce.doa.SupProductDao"%>
 <%@ page import="com.supinfo.sun.supcommerce.exception.UnknownProductException"%>
 <%@ page import="java.text.DecimalFormat"%>
 
-<% String error = ""; %>
-<% final Object idParam = request.getParameter("id"); %>
-<% final DecimalFormat priceFormat = new DecimalFormat("0.00 €");%>
-<jsp:useBean id="reqProduct" class="com.supinfo.sun.supcommerce.bo.SupProduct"/>
-
 <%
+String error = "";
+Boolean remove = false;
+final Object id = request.getParameter("id");
+final DecimalFormat priceFormat = new DecimalFormat("0.00 €");
+SupProduct product = new SupProduct();
+
+// Remove possibility
+if(session.getAttribute("username") != null && session.getAttribute("username") instanceof String)
+	remove = true;
+
 // Retrieve product with "id" parameter requested
-if(idParam != null && idParam instanceof String) {
+if(id != null && id instanceof String) {
 	try {
-		final Long idLong = Long.parseLong((String) idParam);
-		// Set Suproduct Bean to use it with EL
-		pageContext.setAttribute("reqProduct", SupProductDao.findProductById(idLong));
+		final Long idLong = Long.parseLong((String) id);
+		product = SupProductDao.findProductById(idLong);
 	} catch(UnknownProductException e) {
 		error = e.getMessage();
 	} catch(NumberFormatException e) {
@@ -35,43 +40,48 @@ if(idParam != null && idParam instanceof String) {
  	<meta content="IE=edge" http-equiv="X-UA-Compatible">
  	<meta content="width=device-width, initial-scale=1.0" name="viewport">
  	<title>ShowProduct - JSP</title>
- 	<%-- CSS bootstrap 3.0 --%> 
+ 	<%-- CSS --%> 
  	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css">
  	<link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap-theme.min.css">
- 	<link rel="stylesheet" href="${pageContext.servletContext.contextPath}/css/style.css">					
+ 	<link rel="stylesheet" href="${pageContext.servletContext.contextPath}/css/sticky-footer.css">
+ 	<link rel="stylesheet" href="${pageContext.servletContext.contextPath}/css/style.css">				
 </head>
  					
 <body>
 
-<jsp:include page="/WEB-INF/template/header.jsp">
-	<jsp:param name="rootPath" value="${pageContext.servletContext.contextPath}"/>
-</jsp:include>
+<div id="wrap">	
 
-<section id="main-container" class="container">
-	<div class="row">
-		<h1 class="col-sx-12 col-sm-12 col-md-12 col-lg-12">Product Details</h1>
-		<% if(!error.isEmpty()) { %>
-			<div class="alert alert-danger col-sx-12 col-sm-12 col-md-12 col-lg-12">
-				<h3><span class="glyphicon glyphicon-warning-sign"></span>&nbsp; <%= error %></h3>
-			</div>			
-		<% } else { %>
-			<div class="col-sx-12 col-sm-6 col-md-4 col-lg-3">
-				<article class="panel panel-primary">												
-					<header class="panel-heading">
-						<h3><span class="glyphicon glyphicon-tag"></span>&nbsp; Product ID: ${reqProduct.id}</h3>
-					</header>
-					<section class="panel-body">
-				       <p>Product name: ${reqProduct.name}</p>
-				       <p class="description">Product description: ${reqProduct.content}</p>
-				       <p>Product price: <%=  priceFormat.format(reqProduct.getPrice()) %></p>
-				    </section>
-			    </article>
-		    </div>
-		<% } %>		
-	</div>
-</section>
-		 
-<jsp:include page="/WEB-INF/template/footer.jsp"/>
+	<%@include file="/WEB-INF/template/header.jsp" %>
+	
+	<section id="main-container" class="container">
+			<div class="page-header">
+				<h1>Product Details</h1>
+			</div>
+			<% if(!error.isEmpty()) { %>
+				<p class="alert alert-danger"><span class="glyphicon glyphicon-warning-sign"></span>&nbsp; <%= error %></p>
+			<% } else { %>			
+				<ul class="list-group panel panel-primary">
+					<li class="list-group-item panel-heading">
+						<% if(remove) { %>
+							<form action="${pageContext.servletContext.contextPath}/auth/removeProduct?id=<%= product.getId() %>" method="post">
+								<button type="submit" class="close" >&times;</button>
+							</form>
+						<% } %>
+						<span class="glyphicon glyphicon-tag"></span>&nbsp; <%= product.getId() %>
+					</li>
+					<li class="list-group-item">Name: <span class="text-muted"><%= product.getName() %></span></li>
+					<li class="list-group-item">Description: <span class="text-muted"><%= product.getContent() %></span></li>
+					<li class="list-group-item">Price: <span class="text-muted"><%= priceFormat.format(product.getPrice()) %></span></li>
+				</ul>			    
+			<% } %>		
+		
+	</section>
+	
+	<div id="push"></div>
+	
+</div>
+	 
+<%@include file="/WEB-INF/template/footer.jsp" %>
 
 </body>
 </html>
